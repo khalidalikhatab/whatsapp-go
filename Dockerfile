@@ -1,19 +1,15 @@
 FROM golang:1.21-alpine AS builder
 
-# Install build dependencies
-RUN apk add --no-cache gcc musl-dev sqlite-dev
+# Install build dependencies including git
+RUN apk add --no-cache gcc musl-dev sqlite-dev git
 
 WORKDIR /app
 
-# Copy go mod file
-COPY go.mod ./
-
-# Initialize and download dependencies
-RUN go mod download || true
-RUN go mod tidy || true
-
-# Copy source
+# Copy all source files first
 COPY . .
+
+# Download dependencies and generate go.sum
+RUN go mod tidy
 
 # Build with CGO enabled for SQLite
 RUN CGO_ENABLED=1 go build -o whatsapp-bot .
